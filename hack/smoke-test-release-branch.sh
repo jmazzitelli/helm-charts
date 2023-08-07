@@ -47,7 +47,9 @@ restore_env() {
     infomsg "Restoring original git branch"
     git checkout ${ORIGINAL_BRANCH}
     if git rev-parse --verify ${SMOKETEST_BRANCH} &> /dev/null; then
-      git branch -D ${SMOKETEST_BRANCH}
+      if ! git branch -D ${SMOKETEST_BRANCH} &> /dev/null; then
+        infomsg "The test branch [${SMOKETEST_BRANCH}] is no longer needed but could not be deleted. Ignoring this error."
+      fi
     fi
   fi
 
