@@ -15,5 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run smoke test hack script
-        run: hack/smoke-test-release.sh
+        run: hack/smoke-test-release-branch.sh
 
