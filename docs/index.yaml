@@ -1,3 +1,4 @@
+# MAZZ WAS HERE (the change to this index file should trigger a smoke test of the latest helm chart releases)
 apiVersion: v1
 entries:
   kiali-operator:
