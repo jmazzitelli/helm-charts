@@ -4,7 +4,7 @@ entries:
   - apiVersion: v2
     appVersion: v1.75.0
     created: "2023-10-09T07:14:52.057450046Z"
-    description: Kiali is an open source project for service mesh observability, refer
+    description: MAZZ Kiali is an open source project for service mesh observability, refer
       to https://www.kiali.io for details.
     digest: 2375b37a42f23f9338dda4caf74bfb2e80ad2aaee9857d5e4754ddc5033ed62c
     home: https://github.com/kiali/kiali-operator
