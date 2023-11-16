@@ -254,4 +254,6 @@ infomsg "========================="
 infomsg "The smoke test has PASSED"
 infomsg "========================="
 
+abort_now "TESTING ONLY! Pretend we got an error"
+
 restore_env
