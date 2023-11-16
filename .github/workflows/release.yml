@@ -222,6 +222,10 @@ jobs:
           git push origin $(git rev-parse HEAD):refs/heads/$BUILD_TAG
 
           gh pr create -t "Prepare for next version" -b "Please, merge to update version numbers and prepare for release $NEXT_VERSION." -H $BUILD_TAG -B $RELEASE_BRANCH
+
+          # close/reopen the PR to trigger the smoke test action. See https://github.com/kiali/kiali/issues/6704
+          gh pr close $BUILD_TAG
+          gh pr reopen $BUILD_TAG
           
         # For a patch release, everything is ready to publish the generated charts.
         # Let's push to master
