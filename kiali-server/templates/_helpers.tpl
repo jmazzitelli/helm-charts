@@ -27,7 +27,7 @@ Determine if on OpenShift (when debugging the chart for OpenShift use-cases, set
 Identifies the log_level.
 */}}
 {{- define "kiali-server.logLevel" -}}
-{{- .Values.deployment.logger.log_level -}}
+{{- .Values.server.observability.logger.log_level -}}
 {{- end }}
 
 {{/*

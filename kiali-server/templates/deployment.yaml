@@ -8,8 +8,8 @@ metadata:
   labels:
     {{- include "kiali-server.labels" . | nindent 4 }}
 spec:
-{{- if not .Values.deployment.hpa.spec }}
-  replicas: {{ .Values.deployment.replicas }}
+{{- if not .Values.deployment.workload.hpa.spec }}
+  replicas: {{ .Values.deployment.workload.replicas }}
 {{- end }}
   selector:
     matchLabels:
@@ -24,8 +24,8 @@ spec:
       name: {{ include "kiali-server.fullname" . }}
       labels:
         {{- include "kiali-server.labels" . | nindent 8 }}
-        {{- if .Values.deployment.pod_labels }}
-        {{- toYaml .Values.deployment.pod_labels | nindent 8 }}
+        {{- if .Values.deployment.pod.labels }}
+        {{- toYaml .Values.deployment.pod.labels | nindent 8 }}
         {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -37,36 +37,36 @@ spec:
         prometheus.io/port: ""
         {{- end }}
         kiali.io/dashboards: go,kiali
-        {{- if .Values.deployment.pod_annotations }}
-        {{- toYaml .Values.deployment.pod_annotations | nindent 8 }}
+        {{- if .Values.deployment.pod.annotations }}
+        {{- toYaml .Values.deployment.pod.annotations | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "kiali-server.fullname" . }}
-      {{- if .Values.deployment.priority_class_name }}
-      priorityClassName: {{ .Values.deployment.priority_class_name | quote }}
+      {{- if .Values.deployment.pod.priority_class_name }}
+        priorityClassName: {{ .Values.deployment.pod.priority_class_name | quote }}
       {{- end }}
-      {{- if .Values.deployment.image_pull_secrets }}
+      {{- if .Values.deployment.image.pull_secrets }}
       imagePullSecrets:
-      {{- range .Values.deployment.image_pull_secrets }}
+      {{- range .Values.deployment.image.pull_secrets }}
       - name: {{ . }}
       {{- end }}
       {{- end }}
-      {{- if .Values.deployment.host_aliases }}
+      {{- if .Values.deployment.pod.host_aliases }}
       hostAliases:
-      {{- toYaml .Values.deployment.host_aliases | nindent 6 }}
+      {{- toYaml .Values.deployment.pod.host_aliases | nindent 6 }}
       {{- end }}
-      {{- if .Values.deployment.dns }}
-      {{- if .Values.deployment.dns.policy }}
-      dnsPolicy: "{{ .Values.deployment.dns.policy }}"
+      {{- if .Values.deployment.pod.dns }}
+      {{- if .Values.deployment.pod.dns.policy }}
+      dnsPolicy: "{{ .Values.deployment.pod.dns.policy }}"
       {{- end }}
-      {{- if .Values.deployment.dns.config }}
+      {{- if .Values.deployment.pod.dns.config }}
       dnsConfig:
-      {{- toYaml .Values.deployment.dns.config | nindent 8 }}
+      {{- toYaml .Values.deployment.pod.dns.config | nindent 8 }}
       {{- end }}
       {{- end }}
       containers:
-      - image: "{{ .Values.deployment.image_name }}{{ if .Values.deployment.image_digest }}@{{ .Values.deployment.image_digest }}{{ end }}:{{ .Values.deployment.image_version }}"
-        imagePullPolicy: {{ .Values.deployment.image_pull_policy | default "Always" }}
+      - image: "{{ .Values.deployment.image.name }}{{ if .Values.deployment.image.digest }}@{{ .Values.deployment.image.digest }}{{ end }}:{{ .Values.deployment.image.version }}"
+        imagePullPolicy: {{ .Values.deployment.image.pull_policy | default "Always" }}
         name: {{ include "kiali-server.fullname" . }}
         command:
         - "/opt/kiali/kiali"
@@ -74,8 +74,8 @@ spec:
         - "/kiali-configuration/config.yaml"
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-        {{- if .Values.deployment.security_context}}
-        {{- toYaml .Values.deployment.security_context | nindent 10 }}
+        {{- if .Values.deployment.pod.security_context}}
+        {{- toYaml .Values.deployment.pod.security_context | nindent 10 }}
         {{- else }}
           allowPrivilegeEscalation: false
           privileged: false
@@ -101,8 +101,8 @@ spec:
             {{- else }}
             scheme: HTTP
             {{- end }}
-          initialDelaySeconds: {{ .Values.deployment.probes.readiness.initial_delay_seconds | int | default 5 }}
-          periodSeconds: {{ .Values.deployment.probes.readiness.period_seconds | int | default 30 }}
+          initialDelaySeconds: {{ .Values.deployment.pod.probes.readiness.initial_delay_seconds | int | default 5 }}
+          periodSeconds: {{ .Values.deployment.pod.probes.readiness.period_seconds | int | default 30 }}
         livenessProbe:
           httpGet:
             path: {{ include "kiali-server.server.web_root" . | trimSuffix "/"  }}/healthz
@@ -112,8 +112,8 @@ spec:
             {{- else }}
             scheme: HTTP
             {{- end }}
-          initialDelaySeconds: {{ .Values.deployment.probes.liveness.initial_delay_seconds | int | default 5 }}
-          periodSeconds: {{ .Values.deployment.probes.liveness.period_seconds | int | default 30 }}
+          initialDelaySeconds: {{ .Values.deployment.pod.probes.liveness.initial_delay_seconds | int | default 5 }}
+          periodSeconds: {{ .Values.deployment.pod.probes.liveness.period_seconds | int | default 30 }}
         startupProbe:
           httpGet:
             path: {{ include "kiali-server.server.web_root" . | trimSuffix "/"  }}/healthz
@@ -123,9 +123,9 @@ spec:
             {{- else }}
             scheme: HTTP
             {{- end }}
-          failureThreshold: {{ .Values.deployment.probes.startup.failure_threshold | int | default 6 }}
-          initialDelaySeconds: {{ .Values.deployment.probes.startup.initial_delay_seconds | int | default 30 }}
-          periodSeconds: {{ .Values.deployment.probes.startup.period_seconds | int | default 10 }}
+          failureThreshold: {{ .Values.deployment.pod.probes.startup.failure_threshold | int | default 6 }}
+          initialDelaySeconds: {{ .Values.deployment.pod.probes.startup.initial_delay_seconds | int | default 30 }}
+          periodSeconds: {{ .Values.deployment.pod.probes.startup.period_seconds | int | default 10 }}
         env:
         - name: ACTIVE_NAMESPACE
           valueFrom:
@@ -134,12 +134,12 @@ spec:
         - name: LOG_LEVEL
           value: "{{ include "kiali-server.logLevel" . }}"
         - name: LOG_FORMAT
-          value: "{{ .Values.deployment.logger.log_format }}"
+          value: "{{ .Values.server.observability.logger.log_format }}"
         - name: LOG_TIME_FIELD_FORMAT
-          value: "{{ .Values.deployment.logger.time_field_format }}"
+          value: "{{ .Values.server.observability.logger.time_field_format }}"
         - name: LOG_SAMPLER_RATE
-          value: "{{ .Values.deployment.logger.sampler_rate }}"
-        {{- range .Values.deployment.custom_envs }}
+          value: "{{ .Values.server.observability.logger.sampler_rate }}"
+        {{- range .Values.deployment.pod.custom_envs }}
         - name: {{ .name | quote }}
           value: {{ .value | quote }}
         {{- end }}
@@ -152,7 +152,7 @@ spec:
           mountPath: "/kiali-secret"
         - name: {{ include "kiali-server.fullname" . }}-cabundle
           mountPath: "/kiali-cabundle"
-        {{- range .Values.deployment.custom_secrets }}
+        {{- range .Values.deployment.pod.custom_secrets }}
         - name: {{ .name }}
           mountPath: "{{ .mount }}"
         {{- end }}
@@ -171,9 +171,9 @@ spec:
           readOnly: true
         {{- end }}
         {{- end }}
-        {{- if .Values.deployment.resources }}
+        {{- if .Values.deployment.pod.resources }}
         resources:
-        {{- toYaml .Values.deployment.resources | nindent 10 }}
+        {{- toYaml .Values.deployment.pod.resources | nindent 10 }}
         {{- end }}
       volumes:
       - name: {{ include "kiali-server.fullname" . }}-configuration
@@ -191,7 +191,7 @@ spec:
           {{- end }}
       - name: {{ include "kiali-server.fullname" . }}-secret
         secret:
-          secretName: {{ .Values.deployment.secret_name }}
+          secretName: {{ .Values.deployment.service.secret_name }}
           optional: true
       - name: {{ include "kiali-server.fullname" . }}-cabundle
         configMap:
@@ -199,7 +199,7 @@ spec:
       {{- if not (eq "true" (include "kiali-server.isOpenShift" .)) }}
           optional: true
       {{- end }}
-      {{- range .Values.deployment.custom_secrets }}
+      {{- range .Values.deployment.pod.custom_secrets }}
       - name: {{ .name }}
       {{- if .csi}}
         csi: {{ toYaml .csi | nindent 10 }}
@@ -225,32 +225,32 @@ spec:
           secretName: {{ .secret_name }}
       {{- end }}
       {{- end }}
-      {{- if or (.Values.deployment.affinity.node) (or (.Values.deployment.affinity.pod) (.Values.deployment.affinity.pod_anti)) }}
+      {{- if or (.Values.deployment.pod.affinity.node) (or (.Values.deployment.pod.affinity.pod) (.Values.deployment.pod.affinity.pod_anti)) }}
       affinity:
-        {{- if .Values.deployment.affinity.node }}
+        {{- if .Values.deployment.pod.affinity.node }}
         nodeAffinity:
-        {{- toYaml .Values.deployment.affinity.node | nindent 10 }}
+        {{- toYaml .Values.deployment.pod.affinity.node | nindent 10 }}
         {{- end }}
-        {{- if .Values.deployment.affinity.pod }}
+        {{- if .Values.deployment.pod.affinity.pod }}
         podAffinity:
-        {{- toYaml .Values.deployment.affinity.pod | nindent 10 }}
+        {{- toYaml .Values.deployment.pod.affinity.pod | nindent 10 }}
         {{- end }}
-        {{- if .Values.deployment.affinity.pod_anti }}
+        {{- if .Values.deployment.pod.affinity.pod_anti }}
         podAntiAffinity:
-        {{- toYaml .Values.deployment.affinity.pod_anti | nindent 10 }}
+        {{- toYaml .Values.deployment.pod.affinity.pod_anti | nindent 10 }}
         {{- end }}
       {{- end }}
-      {{- if .Values.deployment.tolerations }}
+      {{- if .Values.deployment.pod.tolerations }}
       tolerations:
-      {{- toYaml .Values.deployment.tolerations | nindent 8 }}
+      {{- toYaml .Values.deployment.pod.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Values.deployment.node_selector }}
+      {{- if .Values.deployment.pod.node_selector }}
       nodeSelector:
-      {{- toYaml .Values.deployment.node_selector | nindent 8 }}
+      {{- toYaml .Values.deployment.pod.node_selector | nindent 8 }}
       {{- end }}
-      {{- if .Values.deployment.topology_spread_constraints }}
+      {{- if .Values.deployment.pod.topology_spread_constraints }}
       topologySpreadConstraints:
-      {{- toYaml .Values.deployment.topology_spread_constraints | nindent 8 }}
+      {{- toYaml .Values.deployment.pod.topology_spread_constraints | nindent 8 }}
       {{- end }}
 ...
 {{- end }}

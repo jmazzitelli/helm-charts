@@ -18,12 +18,12 @@ metadata:
     kiali.io/external-url: {{ .Values.server.web_schema }}://{{ .Values.server.web_fqdn }}:{{ .Values.server.web_port }}{{ include "kiali-server.server.web_root" . }}
     {{- end }}
     {{- end }}
-    {{- if .Values.deployment.service_annotations }}
-    {{- toYaml .Values.deployment.service_annotations | nindent 4  }}
+    {{- if .Values.deployment.service.annotations }}
+    {{- toYaml .Values.deployment.service.annotations | nindent 4  }}
     {{- end }}
 spec:
-  {{- if .Values.deployment.service_type }}
-  type: {{ .Values.deployment.service_type }}
+  {{- if .Values.deployment.service.type }}
+  type: {{ .Values.deployment.service.type }}
   {{- end }}
   ports:
   {{- if (include "kiali-server.identity.cert_file" .) }}
@@ -35,7 +35,7 @@ spec:
   {{- end }}
     protocol: TCP
     port: {{ .Values.server.port }}
-    {{- if and (not (empty .Values.server.node_port)) (eq .Values.deployment.service_type "NodePort") }}
+    {{- if and (not (empty .Values.server.node_port)) (eq .Values.deployment.service.type "NodePort") }}
     nodePort: {{ .Values.server.node_port }}
     {{- end }}
   {{- if .Values.server.observability.metrics.enabled }}
@@ -46,8 +46,8 @@ spec:
   {{- end }}
   selector:
     {{- include "kiali-server.selectorLabels" . | nindent 4 }}
-  {{- if .Values.deployment.additional_service_yaml }}
-  {{- toYaml .Values.deployment.additional_service_yaml | nindent 2  }}
+  {{- if .Values.deployment.service.additional_yaml }}
+  {{- toYaml .Values.deployment.service.additional_yaml | nindent 2  }}
   {{- end }}
 ...
 {{- end }}

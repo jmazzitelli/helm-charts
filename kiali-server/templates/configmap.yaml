@@ -6,9 +6,9 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
   labels:
     {{- include "kiali-server.labels" . | nindent 4 }}
-  {{- if .Values.deployment.configmap_annotations }}
+  {{- if .Values.deployment.configmap.annotations }}
   annotations:
-    {{- toYaml .Values.deployment.configmap_annotations | nindent 4 }}
+    {{- toYaml .Values.deployment.configmap.annotations | nindent 4 }}
   {{- end }}
 data:
   config.yaml: |
