@@ -240,11 +240,11 @@ if ! ${CLIENT_EXE} wait deployment -l app.kubernetes.io/name=kiali --for=conditi
   ${CLIENT_EXE} describe deployments -n ${SERVER_NAMESPACE} || true
   abort_now "The server deployment failed to become available. The smoke test has FAILED!"
 fi
-if ! ${CLIENT_EXE} wait pods -l app.kubernetes.io/name=kiali --for=condition=Ready -n ${SERVER_NAMESPACE} --timeout=5m; then
+if  ${CLIENT_EXE} wait pods -l app.kubernetes.io/name=kiali --for=condition=Ready -n ${SERVER_NAMESPACE} --timeout=5m; then
   ${CLIENT_EXE} describe deployments -n ${SERVER_NAMESPACE} || true
   ${CLIENT_EXE} describe pods -n ${SERVER_NAMESPACE} || true
   ${CLIENT_EXE} logs -l app.kubernetes.io/name=kiali -n ${SERVER_NAMESPACE} || true
-  abort_now "The server pod failed to start. The smoke test has FAILED!"
+  abort_now "MAZZZZ The server pod failed to start. The smoke test has FAILED!"
 fi
 
 if ! ${HELM_EXE} uninstall --namespace ${SERVER_NAMESPACE} kiali-server; then
